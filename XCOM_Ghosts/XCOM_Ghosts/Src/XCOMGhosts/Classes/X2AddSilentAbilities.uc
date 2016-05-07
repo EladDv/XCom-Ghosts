@@ -11,8 +11,11 @@ static function array<X2DataTemplate> CreateTemplates()
 	local X2ItemTemplateManager ITM;
 
 	Templates=Class 'X2Ability_Stealth'.static.CreateTemplates();
+	`log("-------------------------------------Gave all soldiers ReConcealeSquad------------------------");
+
 	Templates=Class 'X2Item_SilencedWeapons'.static.CreateTemplates();
-	
+	`log("-------------------------------------Gave all soldiers ReConcealeSquad------------------------");
+
 	
 	CTM= class'X2CharacterTemplateManager'.static.GetCharacterTemplateManager();
 	ITM= class'X2ItemTemplateManager'.static.GetItemTemplateManager();
@@ -24,9 +27,10 @@ static function array<X2DataTemplate> CreateTemplates()
 
 	CharTemp=CTM.FindCharacterTemplate('Soldier');
 	CharTemp.Abilities.AddItem('ReConcealeSquad');
-	`log("Gave all soldiers ReConcealeSquad");
+	`log("-------------------------------------Gave all soldiers ReConcealeSquad------------------------");
 
 	Templates.Length=0;
 	return Templates;
 
 }
+

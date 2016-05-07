@@ -143,6 +143,7 @@ var config int LMG_BEAM_ISUPPLIES;
 var config int LMG_BEAM_TRADINGPOSTVALUE;
 var config int LMG_BEAM_IPOINTS;
 
+Var config float SILENCER_RANGE_REDUCTION_MULTIPLIER;
 
 
 static function array<X2DataTemplate> CreateTemplates()
@@ -168,9 +169,76 @@ static function array<X2DataTemplate> CreateTemplates()
 	Weapons.AddItem(CreateTemplate_AssaultRifle_ConventionalSilent());
 	Weapons.AddItem(CreateTemplate_AssaultRifle_MagneticSilent());
 	Weapons.AddItem(CreateTemplate_AssaultRifle_BeamSilent());
+	
+
+	Weapons.AddItem(CreateBasicSilencerUpgrade());
 
 	return Weapons;
 
+}
+
+static function int GetZero(X2WeaponUpgradeTemplate UpgradeTemplate)
+{
+	return default.SILENCER_RANGE_REDUCTION_MULTIPLIER;
+}
+Static function string GetSilencedAbilityName(X2WeaponUpgradeTemplate UpgradeTemplate, XComGameState_Ability AbilityState)
+{
+	return "Silenced Weapon";	
+} 
+function bool Silence(X2WeaponUpgradeTemplate UpgradeTemplate, XComGameState_Unit TargetUnit)
+{
+	return true;
+}
+
+static function X2DataTemplate CreateBasicSilencerUpgrade()
+{
+	local X2WeaponUpgradeTemplate Template;
+
+	`CREATE_X2TEMPLATE(class'X2WeaponUpgradeTemplate', Template, 'Silencer_Bsc');
+
+	Class'X2Item_DefaultUpgrades'.static.SetUpFreeKillUpgrade(Template);
+	
+	Template.CanApplyUpgradeToWeaponFn = Class'X2Item_DefaultUpgrades'.static.CanApplyUpgradeToWeapon;
+	
+	Template.CanBeBuilt = false;
+	Template.MaxQuantity = 1;
+		
+	Template.FreeKillFn = Silence;
+	Template.GetBonusAmountFn = GetZero;
+	
+	Template.FreeKillChance = default.SILENCER_RANGE_REDUCTION_MULTIPLIER;
+
+	Template.BlackMarketTexts = Class'X2Item_DefaultUpgrades'.default.UpgradeBlackMarketTexts;
+
+	Template.LootStaticMesh = StaticMesh'UI_3D.Loot.WeapFragmentA';
+	Template.TradingPostValue = 10;
+	Template.Tier = 0;
+
+	Template.BonusAbilities.AddItem('Silenced');
+
+	Template.strImage = "img:///UILibrary_StrategyImages.X2InventoryIcons.ConvAssault_SuppressorB_inv";
+	
+	Template.MutuallyExclusiveUpgrades.AddItem('FreeKillUpgrade');
+	Template.MutuallyExclusiveUpgrades.AddItem('Silencer_Bsc');
+	Template.MutuallyExclusiveUpgrades.AddItem('FreeKillUpgrade_Bsc');
+	Template.MutuallyExclusiveUpgrades.AddItem('FreeKillUpgrade_Adv');
+	Template.MutuallyExclusiveUpgrades.AddItem('FreeKillUpgrade_Sup');
+	
+	Template.AddUpgradeAttachment('Suppressor', 'UIPawnLocation_WeaponUpgrade_AssaultRifle_Suppressor', "ConvAssaultRifle.Meshes.SM_ConvAssaultRifle_SuppressorB", "", 'AssaultRifle_CV', , "img:///UILibrary_Common.ConvAssaultRifle.ConvAssault_SuppressorB", "img:///UILibrary_StrategyImages.X2InventoryIcons.ConvAssault_SuppressorB_inv", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_barrel");
+	Template.AddUpgradeAttachment('Suppressor', 'UIPawnLocation_WeaponUpgrade_AssaultRifle_Suppressor', "MagAssaultRifle.Meshes.SM_MagAssaultRifle_SuppressorB", "", 'AssaultRifle_MG', , "img:///UILibrary_Common.UI_MagAssaultRifle.MagAssaultRifle_SupressorB", "img:///UILibrary_StrategyImages.X2InventoryIcons.MagAssaultRifle_SupressorB_inv", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_barrel");
+	Template.AddUpgradeAttachment('Suppressor', 'UIPawnLocation_WeaponUpgrade_AssaultRifle_Suppressor', "BeamAssaultRifle.Meshes.SM_BeamAssaultRifle_SuppressorB", "", 'AssaultRifle_BM', , "img:///UILibrary_Common.UI_BeamAssaultRifle.BeamAssaultRifle_SupressorB", "img:///UILibrary_StrategyImages.X2InventoryIcons.BeamAssaultRifle_SupressorB_inv", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_barrel");
+
+	Template.AddUpgradeAttachment('Suppressor', 'UIPawnLocation_WeaponUpgrade_Sniper_Suppressor', "ConvSniper.Meshes.SM_ConvSniper_SuppressorB", "", 'SniperRifle_CV', , "img:///UILibrary_Common.ConvSniper.ConvSniper_SuppressorB", "img:///UILibrary_StrategyImages.X2InventoryIcons.ConvSniper_SuppressorB_inv", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_barrel");
+	Template.AddUpgradeAttachment('Suppressor', 'UIPawnLocation_WeaponUpgrade_Sniper_Suppressor', "MagSniper.Meshes.SM_MagSniper_SuppressorB", "", 'SniperRifle_MG', , "img:///UILibrary_Common.UI_MagSniper.MagSniper_SuppressorB", "img:///UILibrary_StrategyImages.X2InventoryIcons.MagSniper_SuppressorB_inv", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_barrel");
+	Template.AddUpgradeAttachment('Suppressor', 'UIPawnLocation_WeaponUpgrade_Sniper_Suppressor', "BeamSniper.Meshes.SM_BeamSniper_SuppressorB", "", 'SniperRifle_BM', , "img:///UILibrary_Common.UI_BeamSniper.BeamSniper_SupressorB", "img:///UILibrary_StrategyImages.X2InventoryIcons.BeamSniper_SupressorB_inv", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_barrel");
+
+	Template.AddUpgradeAttachment('Suppressor', 'UIPawnLocation_WeaponUpgrade_Cannon_Suppressor', "ConvCannon.Meshes.SM_ConvCannon_SuppressorB", "", 'Cannon_CV', , "img:///UILibrary_Common.ConvCannon.ConvCannon_SuppressorB", "img:///UILibrary_StrategyImages.X2InventoryIcons.ConvCannon_SuppressorB_inv", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_barrel");
+	Template.AddUpgradeAttachment('Suppressor', 'UIPawnLocation_WeaponUpgrade_Cannon_Suppressor', "MagCannon.Meshes.SM_MagCannon_SuppressorB", "", 'Cannon_MG', , "img:///UILibrary_Common.UI_MagCannon.MagCannon_SuppressorB", "img:///UILibrary_StrategyImages.X2InventoryIcons.MagCannon_SuppressorB_inv", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_barrel");
+	Template.AddUpgradeAttachment('Suppressor', 'UIPawnLocation_WeaponUpgrade_Cannon_Suppressor', "BeamCannon.Meshes.SM_BeamCannon_SuppressorB", "", 'Cannon_BM', , "img:///UILibrary_Common.UI_BeamCannon.BeamCannon_SupressorB", "img:///UILibrary_StrategyImages.X2InventoryIcons.BeamCannon_SupressorB_inv", "img:///UILibrary_StrategyImages.X2InventoryIcons.Inv_weaponIcon_barrel");
+
+	Template.FriendlyRenameFn=GetSilencedAbilityName;
+
+	return Template;
 }
 
 

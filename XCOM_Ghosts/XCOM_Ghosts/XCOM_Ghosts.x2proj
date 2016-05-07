@@ -17,6 +17,9 @@
     <Folder Include="Src\XCOMGhosts\Classes\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Config\XComAbilitiesData_Stealth.ini">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Config\XComSilencedWeapons_WeaponData.ini">
       <SubType>Content</SubType>
     </Content>
@@ -36,6 +39,9 @@
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\XCOMGhosts\Classes\X2DownloadableContentInfo_XCOMGhosts.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\XCOMGhosts\Classes\X2Effect_Silencer.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\XCOMGhosts\Classes\X2Effect_SquadEnterConcealment.uc">

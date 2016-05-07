@@ -10,7 +10,7 @@ static function array<X2DataTemplate> CreateTemplates()
 	
 	Templates.AddItem(StealthyEquipment());
 	Templates.AddItem(ReConcealeSquad());
-
+	Templates.AddItem(SilencedAbility());
 
 	//Templates.AddItem(ChangeWeaponInstance());
 	//Templates.AddItem(Silent_SniperStandardFire());
@@ -27,7 +27,14 @@ static function array<X2DataTemplate> CreateTemplates()
 
 	Return Templates;
 }
-
+static function int GetZero(X2WeaponUpgradeTemplate UpgradeTemplate)
+{
+	return 0;
+}
+Static function string GetSilencedAbilityName(X2WeaponUpgradeTemplate UpgradeTemplate, XComGameState_Ability AbilityState)
+{
+	return "Silenced Weapon";	
+} 
  
 static function X2AbilityTemplate ReConcealeSquad()
 {
@@ -68,6 +75,49 @@ static function X2AbilityTemplate ReConcealeSquad()
 	Template.AddTargetEffect(class'X2Effect_Spotted'.static.CreateUnspottedEffect());
 
 	Template.ActivationSpeech = 'ActivateConcealment';
+	Template.BuildNewGameStateFn = TypicalAbility_BuildGameState;
+	Template.BuildVisualizationFn = TypicalAbility_BuildVisualization;
+	Template.bSkipFireAction = true;
+
+	return Template;
+}
+
+static function X2AbilityTemplate SilencedAbility()
+{
+    local X2AbilityTemplate						Template;
+	local X2Effect_Silencer						StealthEffect;
+    local X2AbilityMultiTarget_AllAllies		MultiTargetingStyle;
+	local X2AbilityTrigger_EventListener		EventListener;
+
+	`CREATE_X2ABILITY_TEMPLATE(Template, 'Silenced');
+
+	Template.AbilitySourceName = 'eAbilitySource_Standard';
+	Template.eAbilityIconBehaviorHUD = eAbilityIconBehavior_NeverShow;
+	Template.Hostility = eHostility_Neutral;
+	Template.IconImage = "img:///UILibrary_PerkIcons.UIPerk_stealth";
+	Template.ShotHUDPriority = class'UIUtilities_Tactical'.const.CLASS_COLONEL_PRIORITY;
+
+	Template.AbilityToHitCalc = default.DeadEye;
+	Template.AbilityTargetStyle = default.SelfTarget;
+	
+	Template.AbilityShooterConditions.AddItem(default.LivingShooterProperty);
+
+
+	
+	EventListener = new class'X2AbilityTrigger_EventListener';
+	EventListener.ListenerData.Deferral = ELD_Immediate;
+	EventListener.ListenerData.EventID = 'AlertDataTriggerAlertAbility';
+	EventListener.ListenerData.Filter = eFilter_Unit;
+	EventListener.ListenerData.EventFn = class'XComGameState_Ability'.static.AbilityTriggerEventListener_Self;
+	EventListener.ListenerData.Priority = 45; //This ability must get triggered after the rest of the on-death listeners (namely, after mind-control effects get removed)
+	Template.AbilityTriggers.AddItem(EventListener);
+
+	StealthEffect = new class'X2Effect_Silencer';
+	StealthEffect.BuildPersistentEffect(1, false, false, false, eGameRule_PlayerTurnEnd);
+	StealthEffect.DuplicateResponse = eDupe_Allow;
+
+	Template.AddTargetEffect(StealthEffect);
+
 	Template.BuildNewGameStateFn = TypicalAbility_BuildGameState;
 	Template.BuildVisualizationFn = TypicalAbility_BuildVisualization;
 	Template.bSkipFireAction = true;
