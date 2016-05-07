@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# XCOM ModBuddy Solution File, Format Version 11.00
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{5DAE07AF-E217-45C1-8DE7-FF99D6011E8A}") = "XCOM_Ghosts", "XCOM_Ghosts\XCOM_Ghosts.x2proj", "{7D5AAEB8-6DBF-4426-950E-9FCC76C72ECE}"
+EndProject
+Project("{5DAE07AF-E217-45C1-8DE7-FF99D6011E8A}") = "Project Reference", "..\Second Wave Reborn\Project Reference\Project Reference.x2proj", "{62F3F9DF-3F57-400B-B99E-84E426CF23F9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Default|XCOM 2 = Default|XCOM 2
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7D5AAEB8-6DBF-4426-950E-9FCC76C72ECE}.Default|XCOM 2.ActiveCfg = Default|XCOM 2
+		{7D5AAEB8-6DBF-4426-950E-9FCC76C72ECE}.Default|XCOM 2.Build.0 = Default|XCOM 2
+		{62F3F9DF-3F57-400B-B99E-84E426CF23F9}.Default|XCOM 2.ActiveCfg = Default|XCOM 2
+		{62F3F9DF-3F57-400B-B99E-84E426CF23F9}.Default|XCOM 2.Build.0 = Default|XCOM 2
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
