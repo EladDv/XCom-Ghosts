@@ -3,6 +3,7 @@
 class X2Effect_Silencer extends X2Effect_Persistent;
 
 var array<int> EnemiesToReturnToGreen;
+var array<int> Enemies;
 
 simulated protected function OnEffectAdded(const out EffectAppliedData ApplyEffectParameters, XComGameState_BaseObject kNewTargetState, XComGameState NewGameState, XComGameState_Effect NewEffectState)
 {
@@ -11,6 +12,33 @@ simulated protected function OnEffectAdded(const out EffectAppliedData ApplyEffe
 	ThisObj=self;
 	`XEVENTMGR.RegisterForEvent(ThisObj, 'AbilityActivated', ActivateSilencer, ELD_OnStateSubmitted);
 }
+
+function EventListenerReturn CheckUnitAIData(Object EventData, Object EventSource, XComGameState GameState, Name EventID)
+{
+	local XComGameState_Unit AlertedUnit;
+	local XComGameState_AIUnitData AIGameState;
+	local int AIUnitDataID;
+	local EAlertCause AlertCause;
+	local XComGameState NewGameState;
+
+	AlertedUnit = XComGameState_Unit(EventSource);
+	if(Enemies.Find(AlertedUnit.ObjectID)!=-1)
+	{
+		if(XComGameState_AIUnitData(GameState.CreateStateObject(class'XComGameState_AIUnitData',AlertedUnit.GetAIUnitDataID())).YellowAlertCause==eAC_DetectedSound)
+		{ //The alert we are looking for was found, add to an array for later checking at the effect tick (End of turn).
+			if(EnemiesToReturnToGreen.Find(AlertedUnit.ObjectID)==-1)
+				EnemiesToReturnToGreen.AddItem(AlertedUnit.ObjectID);
+			`log("Found Unit in yellow and added it!");
+		}
+		else if(XComGameState_AIUnitData(GameState.CreateStateObject(class'XComGameState_AIUnitData',AlertedUnit.GetAIUnitDataID())).YellowAlertCause!=eAC_None)
+		{ // If found a referenced unit with a cause which is different to the sound one remove from the array because it was also alerted due to something else.
+			if(EnemiesToReturnToGreen.Find(AlertedUnit.ObjectID)!=-1)
+				EnemiesToReturnToGreen.RemoveItem(AlertedUnit.ObjectID);
+		}
+	}
+	return ELR_NoInterrupt;
+}
+
 function EventListenerReturn ActivateSilencer(Object EventData, Object EventSource, XComGameState GameState, Name EventID)
 {
 	local XComGameState_Unit SourceUnitState, EnemyInSoundRangeUnitState , unit;
@@ -19,17 +47,19 @@ function EventListenerReturn ActivateSilencer(Object EventData, Object EventSour
 	local TTile SoundTileLocation;
 	local XComGameState_Ability ActivatedAbilityState;
 	local Vector SoundLocation;
-	local array<StateObjectReference> Enemies;
-	local StateObjectReference EnemyRef;
+	local int EnemyRefID;
 	local XComGameStateHistory History;
 	local int WeaponSilencerPerc;
 	local X2WeaponUpgradeTemplate WeaponSilencerTemplate;
 	local array<X2WeaponUpgradeTemplate> WeaponUpgradeTemplates;
 	local XComGameStateContext_Ability ActivatedAbilityStateContext;
-
+	local object ThisObj;
 	local name SilencerName;
+
 	History=`XCOMHistory;
 	
+	ThisObj=self;
+
 	ActivatedAbilityStateContext = XComGameStateContext_Ability(GameState.GetContext()); //sets the ability context
 	ActivatedAbilityState = XComGameState_Ability(EventData); // sets the ability state
 	// Checks if the current ability flagged to make AI detectable sound
@@ -63,21 +93,7 @@ function EventListenerReturn ActivateSilencer(Object EventData, Object EventSour
 					SourceUnitState.GetKeystoneVisibilityLocation(SoundTileLocation);
 				}
 				GetEnemiesInRange(WeaponState,SoundTileLocation, SoundRange, Enemies); //Gets all enemies between the weapons iSoundRange and the reduce sound range.
-			}
-			foreach Enemies(EnemyRef) //Cycles through all the returned enemies to check whether their AI data contains a Yellow Alert which fits what we are looking for
-			{
-				EnemyInSoundRangeUnitState = XComGameState_Unit(History.GetGameStateForObjectID(EnemyRef.ObjectID));
-				if(XComGameState_AIUnitData(GameState.CreateStateObject(class'XComGameState_AIUnitData', EnemyInSoundRangeUnitState.GetAIUnitDataID())).YellowAlertCause==eAC_DetectedSound)
-				{ //The alert we are looking for was found, add to an array for later checking at the effect tick (End of turn).
-					if(EnemiesToReturnToGreen.Find(EnemyRef.ObjectID)==-1)
-						EnemiesToReturnToGreen.AddItem(EnemyRef.ObjectID);
-					`log("Found Unit in yellow and added it!");
-				}
-				else if(XComGameState_AIUnitData(GameState.CreateStateObject(class'XComGameState_AIUnitData',EnemyInSoundRangeUnitState.GetAIUnitDataID())).YellowAlertCause!=eAC_None)
-				{ // If found a referenced unit with a cause which is different to the sound one remove from the array because it was also alerted due to something else.
-					if(EnemiesToReturnToGreen.Find(EnemyRef.ObjectID)!=-1)
-						EnemiesToReturnToGreen.RemoveItem(EnemyRef.ObjectID);
-				}
+				`XEVENTMGR.RegisterForEvent(ThisObj, 'AlertDataTriggerAlertAbility', CheckUnitAIData , ELD_Immediate);
 			}
 	
 			`log("Added Silencer Effect to a Unit");
@@ -114,6 +130,7 @@ simulated function bool OnEffectTicked(const out EffectAppliedData ApplyEffectPa
 		if(EnemyInSoundRangeUnitState.GetCurrentStat(eStat_AlertLevel)==`ALERT_LEVEL_YELLOW)
 			EnemyInSoundRangeUnitState.SetCurrentStat(eStat_AlertLevel,`ALERT_LEVEL_GREEN);
 	}
+	Enemies.Length=0;
 	EnemiesToReturnToGreen.Length=0;
 	foreach `XCOMHistory.IterateByClassType(class'XComGameState_Unit', Unit) //Debug log lines for alert levels
 	{
@@ -131,7 +148,7 @@ simulated function bool OnEffectTicked(const out EffectAppliedData ApplyEffectPa
 	return true;
 }
 
-function GetEnemiesInRange(XComGameState_Item item,TTile kLocation, int nMeters, out array<StateObjectReference> OutEnemies)
+function GetEnemiesInRange(XComGameState_Item item,TTile kLocation, int nMeters, out array<int> OutEnemies)
 {
 	local vector vCenter, vLoc;
 	local float fDistSq;
@@ -162,7 +179,7 @@ function GetEnemiesInRange(XComGameState_Item item,TTile kLocation, int nMeters,
 
 			if( VSizeSq(vLoc - vCenter) <= RadiiSumSquaredMax && VSizeSq(vLoc - vCenter)> RadiiSumSquared )
 			{
-				OutEnemies.AddItem(kUnit.GetReference());
+				OutEnemies.AddItem(kUnit.ObjectID);
 			}
 		}
 	}
