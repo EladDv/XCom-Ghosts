@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # XCOM ModBuddy Solution File, Format Version 11.00
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{5DAE07AF-E217-45C1-8DE7-FF99D6011E8A}") = "XCOM_Ghosts", "XCOM_Ghosts\XCOM_Ghosts.x2proj", "{93A69843-60D9-4168-B162-C60F7E7AB3CE}"
+Project("{5DAE07AF-E217-45C1-8DE7-FF99D6011E8A}") = "XCOM_Ghosts", "XCOM_Ghosts\XCOM_Ghosts.x2proj", "{562CB72F-E761-4A82-A2D1-441B7A2565BF}"
 EndProject
 Project("{5DAE07AF-E217-45C1-8DE7-FF99D6011E8A}") = "Project Reference", "..\Second Wave Reborn\Project Reference\Project Reference.x2proj", "{62F3F9DF-3F57-400B-B99E-84E426CF23F9}"
 EndProject
@@ -12,8 +12,8 @@ Global
 		Default|XCOM 2 = Default|XCOM 2
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{93A69843-60D9-4168-B162-C60F7E7AB3CE}.Default|XCOM 2.ActiveCfg = Default|XCOM 2
-		{93A69843-60D9-4168-B162-C60F7E7AB3CE}.Default|XCOM 2.Build.0 = Default|XCOM 2
+		{562CB72F-E761-4A82-A2D1-441B7A2565BF}.Default|XCOM 2.ActiveCfg = Default|XCOM 2
+		{562CB72F-E761-4A82-A2D1-441B7A2565BF}.Default|XCOM 2.Build.0 = Default|XCOM 2
 		{62F3F9DF-3F57-400B-B99E-84E426CF23F9}.Default|XCOM 2.ActiveCfg = Default|XCOM 2
 		{62F3F9DF-3F57-400B-B99E-84E426CF23F9}.Default|XCOM 2.Build.0 = Default|XCOM 2
 	EndGlobalSection
