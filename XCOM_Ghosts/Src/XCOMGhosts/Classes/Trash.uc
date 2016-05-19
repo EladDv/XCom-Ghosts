@@ -1,4 +1,10 @@
 // This is an Unreal Script
+class Trash extends Object;                           
+
+var int TempThing;
+
+/*
+                           
 
 class UI_Listener_TacHUDStart extends UIScreenListener;
 
@@ -8,10 +14,10 @@ event OnInit(UIScreen Screen)
 	
 
 	ThisObj=self;
-/*  `XEVENTMGR.RegisterForEvent(ThisObj, 'ObjectMoved', FixVisibility, ELD_OnStateSubmitted,70);	
+	`XEVENTMGR.RegisterForEvent(ThisObj, 'ObjectMoved', FixVisibility, ELD_Immediate,10);	
 	`XEVENTMGR.RegisterForEvent(ThisObj, 'ObjectMoved', TestReturnStuff, ELD_OnStateSubmitted);	
-	`XEVENTMGR.RegisterForEvent(ThisObj, 'ObjectVisibilityChanged', OnObjectVisibilityChanged,ELD_OnStateSubmitted,70 );
-*/
+	`XEVENTMGR.RegisterForEvent(ThisObj, 'ObjectVisibilityChanged', OnObjectVisibilityChanged,ELD_Immediate,10 );
+
 	`log("-----------Registered for Object Moved-----------");	
 	
 	
@@ -214,7 +220,7 @@ function EventListenerReturn FixVisibility(Object EventData, Object EventSource,
 		}
 	}
 
-	return ELR_InterruptEventAndListeners;
+	return ELR_InterruptListeners;
 }
 
 function EventListenerReturn OnObjectVisibilityChanged(Object EventData, Object EventSource, XComGameState GameState, Name EventID)
@@ -246,13 +252,13 @@ function EventListenerReturn OnObjectVisibilityChanged(Object EventData, Object 
 					`log("WE have a good Vis Info");
 					if(VisibilityInfo.bVisibleGameplay)
 					{
-						/*if(XComGameState_Player(GameState.GetGameStateForObjectID(SourceObject.GetAssociatedPlayerID())).TurnsSinceEnemySeen > 0 && SeenUnit.IsAlive())
+						if(XComGameState_Player(GameState.GetGameStateForObjectID(SourceObject.GetAssociatedPlayerID())).TurnsSinceEnemySeen > 0 && SeenUnit.IsAlive())
 						{
 							NewGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("PlayerRecordEnemiesSeen");
 							UpdatedPlayerState = XComGameState_Player(NewGameState.CreateStateObject(Class'XComGameState_Player', SourceObject.GetAssociatedPlayerID()));
 							NewGameState.AddStateObject(UpdatedPlayerState);
 							`GAMERULES.SubmitGameState(NewGameState);
-						}*/
+						}
 						`log("Check Seen Object and Source Object");
 						//Inform the units that they see each other
 						//class'XComGameState_Unit'.static.UnitASeesUnitB(SourceUnit, SeenUnit, GameState);
@@ -285,11 +291,11 @@ function EventListenerReturn OnObjectVisibilityChanged(Object EventData, Object 
 				}
 			}
 		}
-	}
-	return ELR_InterruptEventAndListeners;
+	
+	return ELR_InterruptListeners;
 }
 
-/*
+
 function EventListenerReturn OnUnitEnteredTile(Object EventData, Object EventSource, XComGameState GameState, Name EventID)
 {
 	local XComGameState_Unit OtherUnitState, ThisUnitState;
@@ -471,9 +477,22 @@ function EventListenerReturn OnUnitEnteredTile(Object EventData, Object EventSou
 
 	return ELR_InterruptListeners;
 }
-*/
+ 
+ 
+ 
+ */
+ 
+
+var bool isTrue;  
+
+function int Ready()
+{
+	return 0;	
+}
+
 defaultproperties
 {
 	// Leaving this assigned to none will cause every screen to trigger its signals on this class
-	ScreenClass=UITacticalHUD;
+	TempThing=0;
 }	 
+ 	 

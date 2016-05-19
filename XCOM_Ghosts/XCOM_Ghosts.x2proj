@@ -29,7 +29,13 @@
     <Content Include="Config\XComEngine.ini" />
     <Content Include="Config\XComGame.ini" />
     <Content Include="Localization\XComGame.int" />
+    <Content Include="Src\XCOMGhosts\Classes\Trash.uc">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Src\XCOMGhosts\Classes\UI_Listener_TacHUDStart.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\XCOMGhosts\Classes\UI_Listener_UIShell.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\XCOMGhosts\Classes\X2Ability_Stealth.uc">
@@ -57,6 +63,12 @@
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\XCOMGhosts\Classes\X2Item_SilencedWeapons.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\XCOMGhosts\Classes\XComGameState_Player_FoV.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\XCOMGhosts\Classes\XComGameState_Unit_FoV.uc">
       <SubType>Content</SubType>
     </Content>
   </ItemGroup>
