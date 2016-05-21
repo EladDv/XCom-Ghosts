@@ -5,13 +5,14 @@ class UI_Listener_TacHUDStart extends UIScreenListener;
 event OnInit(UIScreen Screen)
 {
 	local Object ThisObj;
-	
+	local X2_Actor_CTE_Group ACTEG;
 
 	ThisObj=self;
 /*  `XEVENTMGR.RegisterForEvent(ThisObj, 'ObjectMoved', FixVisibility, ELD_OnStateSubmitted,70);	
 	`XEVENTMGR.RegisterForEvent(ThisObj, 'ObjectMoved', TestReturnStuff, ELD_OnStateSubmitted);	
 	`XEVENTMGR.RegisterForEvent(ThisObj, 'ObjectVisibilityChanged', OnObjectVisibilityChanged,ELD_OnStateSubmitted,70 );
 */
+	ACTEG=`BATTLE.Spawn(class'X2_Actor_CTE_Group');
 	`log("-----------Registered for Object Moved-----------");	
 	
 	

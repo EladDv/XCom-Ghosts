@@ -119,10 +119,12 @@ simulated function bool OnEffectTicked(const out EffectAppliedData ApplyEffectPa
 {
 	local int					EnemyID;
 	local XComGameState_Unit	EnemyInSoundRangeUnitState , Unit;
-	
+	local XComGameState_Effect	YellowAlertEffectState;
+	local X2TacticalGameRuleset Ruleset;
+	local XComGameState			AGameState;
 	`log("Number of units in Yellow:"@EnemiesToReturnToGreen.Length);
 	//`log("Meters to tiles:"@`METERSTOUNITS(27)/96);
-
+	Ruleset = X2TacticalGameRuleset(`XCOMGAME.GameRuleset);
 	foreach EnemiesToReturnToGreen(EnemyID) //  Check all enemies in the array, return everyone at yellow to green
 	{
 		EnemyInSoundRangeUnitState = XComGameState_Unit(`XCOMHistory.GetGameStateForObjectID(EnemyID));
@@ -136,6 +138,10 @@ simulated function bool OnEffectTicked(const out EffectAppliedData ApplyEffectPa
 	{
 		if(Unit.GetTeam() == eTeam_Alien)
 		{
+			YellowAlertEffectState=Unit.GetUnitAffectedByEffectState('YellowAlert');
+			AGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("RemoveYellowAlertStatus");
+			YellowAlertEffectState.RemoveEffect(AGameState, NewGameState);
+			Ruleset.SubmitGameState(NewGameState);
 			`log("eStat_AlertLevel"@Unit.GetCurrentStat(eStat_AlertLevel)); 
 			`log("eStat_HearingRadius"@Unit.GetCurrentStat(eStat_HearingRadius)); 
 			`log("HP"@Unit.GetCurrentStat(eStat_HP));

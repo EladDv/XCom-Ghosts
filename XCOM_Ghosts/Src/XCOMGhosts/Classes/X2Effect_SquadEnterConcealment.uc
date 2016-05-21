@@ -10,10 +10,12 @@ simulated protected function OnEffectAdded(const out EffectAppliedData ApplyEffe
 
 simulated function OnEffectRemoved(const out EffectAppliedData ApplyEffectParameters, XComGameState NewGameState, bool bCleansed, XComGameState_Effect RemovedEffectState)
 {
-	 if(!HasEngagedEnemies()) {ApplySquadConceal(NewGameState);}// `log("Redoing Concealment");}
-	// else {`log("Failed doing Concealment");}
+	 if(!HasEngagedEnemies()) {`log("Redoing Concealment");}
+	 else {`log("Failed doing Concealment");}
+
+	ApplySquadConceal(NewGameState, !HasEngagedEnemies());
 }
-function ApplySquadConceal(XComGameState NewGameState)
+function ApplySquadConceal(XComGameState NewGameState,optional bool ReConceale=false)
 {
 	local XComGameStateHistory History;
 	local XComGameState_Player PlayerState;
@@ -25,7 +27,7 @@ function ApplySquadConceal(XComGameState NewGameState)
 	{
 		if( PlayerState.GetTeam() == eTeam_XCom )
 		{
-			PlayerState.SetSquadConcealmentNewGameState(true, NewGameState);
+			PlayerState.SetSquadConcealmentNewGameState(ReConceale, NewGameState);
 		}
 	}
 }

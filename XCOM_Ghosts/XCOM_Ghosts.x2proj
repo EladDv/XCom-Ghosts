@@ -7,6 +7,7 @@
     <SteamPublishID>0</SteamPublishID>
     <AssemblyName>XCOM_Ghosts</AssemblyName>
     <RootNamespace>XCOM_Ghosts</RootNamespace>
+    <ProjectGuid>{70942a0e-3831-4e7f-8565-c2a713a6e25e}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Config\" />
@@ -18,6 +19,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Config\XComAbilitiesData_Stealth.ini">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Config\XComGameCore.ini">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Config\XComSilencedWeapons_WeaponData.ini">
@@ -33,6 +37,9 @@
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\XCOMGhosts\Classes\UI_Listener_TacHUDStart.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\XCOMGhosts\Classes\UI_Listener_TacHUD_FoVConeDrawer.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\XCOMGhosts\Classes\UI_Listener_UIShell.uc">
@@ -63,6 +70,15 @@
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\XCOMGhosts\Classes\X2Item_SilencedWeapons.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\XCOMGhosts\Classes\X2_Actor_ConcealmentBreakingTileEffects.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\XCOMGhosts\Classes\X2_Actor_ConcealmentTileEffects.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\XCOMGhosts\Classes\X2_Actor_CTE_Group.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\XCOMGhosts\Classes\XComGameState_Player_FoV.uc">
