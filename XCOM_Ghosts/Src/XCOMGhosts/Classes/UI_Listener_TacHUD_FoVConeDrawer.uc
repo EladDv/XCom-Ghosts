@@ -1,16 +1,17 @@
-// This is an Unreal Script
+// Useless Class so far
                            
-class UI_Listener_TacHUD_FoVConeDrawer extends UIScreenListener;
+class UI_Listener_TacHUD_FoVConeDrawer extends UIScreenListener; // Useless Class so far
 
-var array<X2Actor_ConeTarget> FoVConeActors;
-var	UITacticalHUD MyScreen;	
+var array<X2Actor_ConeTarget> FoVConeActors; // Useless Class so far
+
+//var	UITacticalHUD MyScreen;	
 event OnInit(UIScreen Screen)
 {
 	local Object ThisObj;
 	
 	ThisObj=self;
-	MyScreen=UITacticalHUD(Screen);
-//	`XEVENTMGR.RegisterForEvent(ThisObj, 'PlayerTurnBegun', DrawFoVCone, ELD_OnStateSubmitted,70);	
+	//MyScreen=UITacticalHUD(Screen);
+//	`XEVENTMGR.RegisterForEvent(ThisObj, 'PlayerTurnBegun', DrawFoVCone, ELD_OnStateSubmitted,70);			
 //	`XEVENTMGR.RegisterForEvent(ThisObj, 'PlayerTurnEnded', DrawFoVCone, ELD_OnStateSubmitted,70);	
 	`log("Activated Cone Drawer Listener",true,'DragonPunk Stealth Mod');	
 }

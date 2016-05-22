@@ -12,6 +12,8 @@ simulated event PostBeginPlay()
 	TargetMesh = StaticMesh(DynamicLoadObject("UI_3D.Tile.ConcealmentBreakTile_Enter", class'StaticMesh'));
 	`assert(TargetMesh != none);
 	StaticMeshComponent.SetStaticMesh(TargetMesh);	
+	
+	return;
 }
 
 simulated event Destroyed ()
@@ -21,6 +23,8 @@ simulated event Destroyed ()
 	SetHidden(True);
 	StaticMeshComponent.SetStaticMesh(TargetMesh);
 	super.Destroyed();	
+	
+	return;
 }
 
 DefaultProperties

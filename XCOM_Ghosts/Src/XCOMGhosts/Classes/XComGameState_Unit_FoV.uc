@@ -90,7 +90,7 @@ function EventListenerReturn OnUnitEnteredTile(Object EventData, Object EventSou
 		ThisUnitState.GetKeystoneVisibilityLocation(CurrentTileLocation);
 		CurrentPosition = WorldData.GetPositionFromTileCoordinates(CurrentTileLocation);
 		
-		foreach History.IterateByClassType(class'XComGameState_InteractiveObject', InteractiveObjectState)
+		foreach History.IterateByClassType(class'XComGameState_InteractiveObject', InteractiveObjectState) // Advent sensor towers are one example
 		{
 			if( InteractiveObjectState.DetectionRange > 0.0 && !InteractiveObjectState.bHasBeenHacked )
 			{
@@ -111,7 +111,7 @@ function EventListenerReturn OnUnitEnteredTile(Object EventData, Object EventSou
 	foreach History.IterateByClassType(class'XComGameState_Unit_FoV', OtherUnitState)
 	{
 		// don't process visibility against self
-		if( OtherUnitState.ObjectID == ThisUnitState.ObjectID )
+		if( OtherUnitState.ObjectID == ThisUnitState.ObjectID || OtherUnitState.IsCivilian())
 		{
 			continue;
 		}
@@ -125,16 +125,16 @@ function EventListenerReturn OnUnitEnteredTile(Object EventData, Object EventSou
 			    OtherUnitState.UnitBreaksConcealment(ThisUnitState) &&
 				VisibilityInfoFromThisUnit.TargetCover == CT_None )
 			{
-				ConcealmentDetectionDistance = GetConcealmentDetectionDistance(OtherUnitState);
+				ConcealmentDetectionDistance = OtherUnitState.GetConcealmentDetectionDistance(ThisUnitState);
 				// What direction is A facing in?
 				aFacing=Normal(Vector(XGUnit(ThisUnitState.GetVisualizer()).GetPawn().Rotation));
 				// Get the vector from A to B
-				aToB=XGUnit(ThisUnitState.GetVisualizer()).GetPawn().Location- XGUnit(OtherUnitState.GetVisualizer()).GetPawn().Location ;
+				aToB=XGUnit(OtherUnitState.GetVisualizer()).GetPawn().Location - XGUnit(ThisUnitState.GetVisualizer()).GetPawn().Location ;
  
 				orientation = aFacing dot Normal(aToB);
 
 				UnitFoV=aCos(orientation);
-				if(UnitFoV>1.2215 || UnitFoV<-1.2215)
+				if(UnitFoV>1.2215 || UnitFoV<-1.2215) // 70 deg in radians, could change easily and make it an INI parameter.
 				{
 					mySign=0.0f;
 				}
@@ -142,10 +142,10 @@ function EventListenerReturn OnUnitEnteredTile(Object EventData, Object EventSou
 				{
 					mySign=1.0f;
 				}
-				`log("OtherConcealed Unit Facing Angle Deg:" @UnitFoV*57.2957795131 @"Rad:"@UnitFoV @"ConcealmentDist:"@mySign*Square(ConcealmentDetectionDistance*((mySign*(1-(0.67*(UnitFoV^2)) ))^0.5f) ) @"DefTargetDist:"@VisibilityInfoFromOtherUnit.DefaultTargetDist @(mySign*(1-(0.67*(UnitFoV^2)))) @(1-(0.67*(UnitFoV^2))) );
-				if( VisibilityInfoFromThisUnit.DefaultTargetDist <=mySign*Square(ConcealmentDetectionDistance*((mySign*(1-(0.67*(UnitFoV^2)) ))^0.5f) ) )
+				`log("OtherConcealed Unit Facing Angle Deg:" @UnitFoV*57.2957795131 @"Rad:"@UnitFoV @"ConcealmentDist:"@mySign*Square(ConcealmentDetectionDistance) @"DefTargetDist:"@VisibilityInfoFromOtherUnit.DefaultTargetDist @(mySign*(1-(0.67*(UnitFoV^2)))) @(1-(0.67*(UnitFoV^2))) );
+				if( VisibilityInfoFromThisUnit.DefaultTargetDist <=mySign*Square(ConcealmentDetectionDistance)) //Checks if it's in FoV - if the angle is less that the angle that'll zero out mySign (70 deg right now)
 				{
-					`log("Other Unit Broke Concealement- Facing Angle Deg:" @UnitFoV*57.2957795131 @"Rad:"@UnitFoV @"ConcealmentDist:"@mySign*Square(ConcealmentDetectionDistance*((mySign*(1-(0.67*(UnitFoV^2)) ))^0.5f) ) @"DefTargetDist:"@VisibilityInfoFromOtherUnit.DefaultTargetDist);			
+					`log("Other Unit Broke Concealement- Facing Angle Deg:" @UnitFoV*57.2957795131 @"Rad:"@UnitFoV @"ConcealmentDist:"@mySign*Square(ConcealmentDetectionDistance) @"DefTargetDist:"@VisibilityInfoFromOtherUnit.DefaultTargetDist);			
 
 					OtherUnitState.BreakConcealment(ThisUnitState, true);
 
@@ -172,7 +172,7 @@ function EventListenerReturn OnUnitEnteredTile(Object EventData, Object EventSou
 					ConcealmentDetectionDistance = GetConcealmentDetectionDistance(OtherUnitState);
 					if(OtherUnitState.GetTeam()!=ETeam_XCom)
 					OtherUnitState.DrawFoVCone(ConcealmentDetectionDistance);
-
+					// What direction is A facing in?
 					aFacing=Normal(Vector(XGUnit(OtherUnitState.GetVisualizer()).GetPawn().Rotation));
 					// Get the vector from A to B
 					aToB=XGUnit(ThisUnitState.GetVisualizer()).GetPawn().Location -XGUnit(OtherUnitState.GetVisualizer()).GetPawn().Location;
@@ -180,7 +180,7 @@ function EventListenerReturn OnUnitEnteredTile(Object EventData, Object EventSou
 					orientation = aFacing dot Normal(aToB);
 
 					UnitFoV=aCos(orientation);	
-					if(UnitFoV>1.2215 || UnitFoV<-1.2215)
+					if(UnitFoV>1.2215 || UnitFoV<-1.2215)	// 70 deg in radians, could change easily and make it an INI parameter.
 					{
 						mySign=0.0f;
 					}
@@ -188,10 +188,10 @@ function EventListenerReturn OnUnitEnteredTile(Object EventData, Object EventSou
 					{
 						mySign=1.0f;
 					}	
-					`log("IsAlive Check Unit Facing Angle Deg:" @UnitFoV*57.2957795131 @"Rad:"@UnitFoV @"ConcealmentDist:"@mySign*Square(ConcealmentDetectionDistance*(Sqrt(mySign*(1-(0.67*(UnitFoV*UnitFoV) ) ) ) ) ) @"DefTargetDist:"@VisibilityInfoFromOtherUnit.DefaultTargetDist @(mySign*(1-(0.67*(UnitFoV^2)))) @(1-(0.67*(UnitFoV^2))) @"Rad:"@UnitFoV);			
-					if( VisibilityInfoFromOtherUnit.DefaultTargetDist <= mySign*Square(ConcealmentDetectionDistance*(Sqrt(mySign*(1-(0.67*(UnitFoV*UnitFoV) ) ) ) ) ))
+					`log("IsAlive Check Unit Facing Angle Deg:" @UnitFoV*57.2957795131 @"Rad:"@UnitFoV @"ConcealmentDist:"@mySign*Square(ConcealmentDetectionDistance) @"DefTargetDist:"@VisibilityInfoFromOtherUnit.DefaultTargetDist @(mySign*(1-(0.67*(UnitFoV^2)))) @(1-(0.67*(UnitFoV^2))) @"Rad:"@UnitFoV);			
+					if( VisibilityInfoFromOtherUnit.DefaultTargetDist <= mySign*Square(ConcealmentDetectionDistance))//Checks if it's in FoV - if the angle is less that the angle that'll zero out mySign (70 deg right now)
 					{
-						`log("This Unit Broke Concealement- Facing Angle Deg:" @UnitFoV*57.2957795131 @"Rad:"@UnitFoV @"ConcealmentDist:"@mySign*Square(ConcealmentDetectionDistance*(Sqrt(mySign*(1-(0.67*(UnitFoV*UnitFoV) ) ) ) ) ) @"DefTargetDist:"@VisibilityInfoFromOtherUnit.DefaultTargetDist);			
+						`log("This Unit Broke Concealement- Facing Angle Deg:" @UnitFoV*57.2957795131 @"Rad:"@UnitFoV @"ConcealmentDist:"@mySign*Square(ConcealmentDetectionDistance) @"DefTargetDist:"@VisibilityInfoFromOtherUnit.DefaultTargetDist);			
 						ThisUnitState.BreakConcealment(OtherUnitState);
 						//OtherUnitState.ConeActor.Destroy();
 						// have to refresh the unit state after broken concealment

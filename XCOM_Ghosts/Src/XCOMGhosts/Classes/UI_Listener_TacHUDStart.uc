@@ -1,4 +1,4 @@
-// This is an Unreal Script
+// Just spawns the Actor which deals with concealment tiles
 
 class UI_Listener_TacHUDStart extends UIScreenListener;
 

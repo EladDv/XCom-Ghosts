@@ -9,9 +9,12 @@ simulated event PostBeginPlay()
 
 	Super.PostBeginPlay();
 
-	TargetMesh = StaticMesh(DynamicLoadObject("UI_3D.Tile.ConcealmentTile_Enter", class'StaticMesh'));
+	//TargetMesh = StaticMesh(DynamicLoadObject("UI_3D.Tile.ObjectiveTile_Enter", class'StaticMesh'));// Green Test Tiles
+	TargetMesh = StaticMesh(DynamicLoadObject("UI_3D.Tile.ConcealmentTile_Enter", class'StaticMesh'));//Red Concealment Tiles 
 	`assert(TargetMesh != none);
 	StaticMeshComponent.SetStaticMesh(TargetMesh);	
+
+	return;
 }
 simulated event Destroyed ()
 {
@@ -20,6 +23,8 @@ simulated event Destroyed ()
 	SetHidden(True);
 	StaticMeshComponent.SetStaticMesh(TargetMesh);
 	super.Destroyed();	
+
+	return;
 }
 DefaultProperties
 {

@@ -10,10 +10,12 @@ simulated protected function OnEffectAdded(const out EffectAppliedData ApplyEffe
 
 simulated function OnEffectRemoved(const out EffectAppliedData ApplyEffectParameters, XComGameState NewGameState, bool bCleansed, XComGameState_Effect RemovedEffectState)
 {
-	 if(!HasEngagedEnemies()) {`log("Redoing Concealment");}
+	local bool HasE_Enemies;
+	HasE_Enemies=HasEngagedEnemies();
+	 if(HasE_Enemies==false) {`log("Redoing Concealment");}
 	 else {`log("Failed doing Concealment");}
 
-	ApplySquadConceal(NewGameState, !HasEngagedEnemies());
+	ApplySquadConceal(NewGameState, !HasE_Enemies);
 }
 function ApplySquadConceal(XComGameState NewGameState,optional bool ReConceale=false)
 {

@@ -41,7 +41,7 @@ static function X2AbilityTemplate ReConcealeSquad()
     local X2AbilityTemplate						Template;
 	local X2Effect_SquadEnterConcealment        StealthEffect;
     local X2AbilityMultiTarget_AllAllies		MultiTargetingStyle;
-	local X2AbilityTrigger_EventListener		EventListener;
+	local X2AbilityTrigger_EventListener		EventListener,EventListener2;
 
 	`CREATE_X2ABILITY_TEMPLATE(Template, 'ReConcealeSquad');
 
@@ -66,9 +66,18 @@ static function X2AbilityTemplate ReConcealeSquad()
 	EventListener.ListenerData.Priority = 45; //This ability must get triggered after the rest of the on-death listeners (namely, after mind-control effects get removed)
 	Template.AbilityTriggers.AddItem(EventListener);
 
+	EventListener2 = new class'X2AbilityTrigger_EventListener';
+	EventListener2.ListenerData.Deferral = ELD_OnStateSubmitted;
+	EventListener2.ListenerData.EventID = 'UnitConcealmentBroken';
+	EventListener2.ListenerData.Filter = eFilter_None;
+	EventListener2.ListenerData.EventFn = class'XComGameState_Ability'.static.AbilityTriggerEventListener_Self;
+	EventListener2.ListenerData.Priority = 45; //This ability must get triggered after the rest of the on-death listeners (namely, after mind-control effects get removed)
+	Template.AbilityTriggers.AddItem(EventListener);
+
+	
 	StealthEffect = new class'X2Effect_SquadEnterConcealment';
 	StealthEffect.BuildPersistentEffect(1, false, true, false, eGameRule_PlayerTurnBegin);
-	StealthEffect.DuplicateResponse = eDupe_Ignore;
+	StealthEffect.DuplicateResponse = eDupe_Refresh;
 
 	Template.AddTargetEffect(StealthEffect);
 

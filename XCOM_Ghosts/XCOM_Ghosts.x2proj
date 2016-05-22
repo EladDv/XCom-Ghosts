@@ -87,6 +87,9 @@
     <Content Include="Src\XCOMGhosts\Classes\XComGameState_Unit_FoV.uc">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="Src\XCOMGhosts\Classes\XComPathingPawn_Exposed.uc">
+      <SubType>Content</SubType>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildLocalExtensionPath)\XCOM2.targets" />
 </Project>
