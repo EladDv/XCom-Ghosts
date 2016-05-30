@@ -43,7 +43,7 @@ function EventListenerReturn OnObjectVisibilityChanged(Object EventData, Object 
 					//Inform the units that they see each other
 					class'XComGameState_Unit_FoV'.static.UnitASeesUnitB(SourceUnit, SeenUnit, GameState);
 				}
-				else if (VisibilityInfo.bVisibleBasic)
+				else if(VisibilityInfo.bClearLOS && VisibilityInfo.bVisibleBasic && !(VisibilityInfo.TargetCover == CT_Standing ||(SeenUnit.IsHunkeredDown() && VisibilityInfo.TargetCover ==CT_MidLevel)) )
 				{
 					//If the target is not yet gameplay-visible, it might be because they are concealed.
 					//Check if the source should break their concealment due to the new conditions.

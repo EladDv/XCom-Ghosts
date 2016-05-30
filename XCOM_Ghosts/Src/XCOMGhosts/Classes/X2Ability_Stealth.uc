@@ -10,6 +10,7 @@ static function array<X2DataTemplate> CreateTemplates()
 	
 	Templates.AddItem(StealthyEquipment());
 	Templates.AddItem(ReConcealeSquad());
+	Templates.AddItem(ReConcealeUnit());
 	Templates.AddItem(SilencedAbility());
 
 	//Templates.AddItem(ChangeWeaponInstance());
@@ -41,7 +42,7 @@ static function X2AbilityTemplate ReConcealeSquad()
     local X2AbilityTemplate						Template;
 	local X2Effect_SquadEnterConcealment        StealthEffect;
     local X2AbilityMultiTarget_AllAllies		MultiTargetingStyle;
-	local X2AbilityTrigger_EventListener		EventListener,EventListener2;
+	local X2AbilityTrigger_EventListener		EventListener;
 
 	`CREATE_X2ABILITY_TEMPLATE(Template, 'ReConcealeSquad');
 
@@ -65,6 +66,44 @@ static function X2AbilityTemplate ReConcealeSquad()
 	EventListener.ListenerData.EventFn = class'XComGameState_Ability'.static.AbilityTriggerEventListener_Self;
 	EventListener.ListenerData.Priority = 45; //This ability must get triggered after the rest of the on-death listeners (namely, after mind-control effects get removed)
 	Template.AbilityTriggers.AddItem(EventListener);
+	
+	StealthEffect = new class'X2Effect_SquadEnterConcealment';
+	StealthEffect.BuildPersistentEffect(1, false, true, false, eGameRule_PlayerTurnBegin);
+	StealthEffect.DuplicateResponse = eDupe_Refresh;
+	
+	Template.AddShooterEffect(StealthEffect);
+	Template.AddTargetEffect(StealthEffect);
+	
+	Template.AddShooterEffect(class'X2Effect_Spotted'.static.CreateUnspottedEffect());
+	Template.AddTargetEffect(class'X2Effect_Spotted'.static.CreateUnspottedEffect());
+
+	Template.ActivationSpeech = 'ActivateConcealment';
+	Template.BuildNewGameStateFn = TypicalAbility_BuildGameState;
+	Template.BuildVisualizationFn = TypicalAbility_BuildVisualization;
+	Template.bSkipFireAction = true;
+
+	return Template;
+}
+
+static function X2AbilityTemplate ReConcealeUnit()
+{
+    local X2AbilityTemplate						Template;
+	local X2Effect_IndividualEnterConcealment   StealthEffect;
+    local X2AbilityMultiTarget_AllAllies		MultiTargetingStyle;
+	local X2AbilityTrigger_EventListener		EventListener2;
+
+	`CREATE_X2ABILITY_TEMPLATE(Template, 'ReConcealeIndividual');
+
+	Template.AbilitySourceName = 'eAbilitySource_Standard';
+	Template.eAbilityIconBehaviorHUD = eAbilityIconBehavior_NeverShow;
+	Template.Hostility = eHostility_Neutral;
+	Template.IconImage = "img:///UILibrary_PerkIcons.UIPerk_stealth";
+	Template.ShotHUDPriority = class'UIUtilities_Tactical'.const.CLASS_COLONEL_PRIORITY;
+
+	Template.AbilityToHitCalc = default.DeadEye;
+	Template.AbilityTargetStyle = default.SelfTarget;
+	
+	Template.AbilityShooterConditions.AddItem(default.LivingShooterProperty);
 
 	EventListener2 = new class'X2AbilityTrigger_EventListener';
 	EventListener2.ListenerData.Deferral = ELD_OnStateSubmitted;
@@ -72,15 +111,17 @@ static function X2AbilityTemplate ReConcealeSquad()
 	EventListener2.ListenerData.Filter = eFilter_None;
 	EventListener2.ListenerData.EventFn = class'XComGameState_Ability'.static.AbilityTriggerEventListener_Self;
 	EventListener2.ListenerData.Priority = 45; //This ability must get triggered after the rest of the on-death listeners (namely, after mind-control effects get removed)
-	Template.AbilityTriggers.AddItem(EventListener);
+	Template.AbilityTriggers.AddItem(EventListener2);
 
 	
-	StealthEffect = new class'X2Effect_SquadEnterConcealment';
+	StealthEffect = new class'X2Effect_IndividualEnterConcealment';
 	StealthEffect.BuildPersistentEffect(1, false, true, false, eGameRule_PlayerTurnBegin);
 	StealthEffect.DuplicateResponse = eDupe_Refresh;
 
+	Template.AddShooterEffect(StealthEffect);
 	Template.AddTargetEffect(StealthEffect);
 
+	Template.AddShooterEffect(class'X2Effect_Spotted'.static.CreateUnspottedEffect());
 	Template.AddTargetEffect(class'X2Effect_Spotted'.static.CreateUnspottedEffect());
 
 	Template.ActivationSpeech = 'ActivateConcealment';

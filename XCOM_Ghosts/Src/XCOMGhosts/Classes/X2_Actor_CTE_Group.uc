@@ -3,10 +3,11 @@
 class X2_Actor_CTE_Group extends Actor 
 		Placeable;
 
-var array<TTile>	AllColoredTiles;
-var int				ObjectID;
+var array<TTile>	AllColoredTiles; //TODO: Make a way to better find tiles by X,Y position and UnitReferece to allow just switching them from hidden to not hidden if not ALL XCom operatives are revealed.
+var int				ObjectID,TickCounter;
 var float			TimeCounter;
 var StaticMesh		targetMesh;
+var bool			LastConcealment,Once;
 
 struct TileMatchMatrix
 {
@@ -31,7 +32,7 @@ simulated event PostBeginPlay()
 	//`XEVENTMGR.RegisterForEvent(ThisObj, 'ObjectVisibilityChanged', UpdateTiles, ELD_Immediate, , ThisObj,true);
 	`XEVENTMGR.RegisterForEvent(ThisObj, 'OnTacticalBeginPlay', OnTacticalEnded, ELD_Immediate, , ThisObj,true);
 	`XEVENTMGR.RegisterForEvent(ThisObj, 'PlayerTurnEnded', OnTacticalEnded, ELD_Immediate, , ThisObj,true);
-	`XEVENTMGR.RegisterForEvent(ThisObj, 'PlayerTurnBegun', CleanSlate, ELD_Immediate, , ThisObj,true);
+	//`XEVENTMGR.RegisterForEvent(ThisObj, 'PlayerTurnBegun', CleanSlate, ELD_Immediate, , ThisObj,true);
 
 	return;
 }
@@ -40,20 +41,41 @@ event Tick(float deltaTime)
 {
 	local XComPlayerController PlayerState;
 	local X2FadingInstancedStaticMeshComponent	OutComponent;
-
+	
 	foreach LocalPlayerControllers(class'XComPlayerController',PlayerState)
 	{
 		(XComTacticalController(PlayerState)).m_kPathingPawn.UpdateConcealmentTilesVisibility(true);                                           
 	}	
-
-	TimeCounter+=1;
-	if( int(timeCounter)%(int(1/(deltaTime))) <2)
+	if(!Once)
 	{
-		
+		DestroyAllTiles();
+		LastConcealment=false;
 		InitTiles();
-		//`log("deltaTime:"@deltaTime @"INITIALIZED TILES!");	
-		timeCounter=1;
+		Once=true;
 	}
+	TimeCounter+=deltaTime;
+	if(abs((4*(TimeCounter-int(TimeCounter)))-(TickCounter+1))<0.1f)
+	{
+		if(int(TimeCounter)%2==0 &&AllColoredTiles.Length==0 )
+		{
+			`log("deltaTime:"@TimeCounter @deltaTime @"Destroying TILES!");
+			//DestroyAllTiles();
+			//LastConcealment=false;
+			InitTiles();
+		}
+		//InitTiles();
+		`log("deltaTime:"@TimeCounter @deltaTime @TickCounter @"INITIALIZED TILES!");
+		if(TickCounter<3)	
+			TickCounter++;
+		else
+		{
+			TickCounter=0;
+			InitTiles();
+		}
+		
+		
+	}
+	
 	else
 		//`log("deltaTime:"@deltaTime);	
 
@@ -61,7 +83,7 @@ event Tick(float deltaTime)
 }
 function InitTiles()
 {
-	local XComGameState_Unit					Unit,ControllingUnit;
+	local XComGameState_Unit						Unit,ControllingUnit;
 	local X2_Actor_ConcealmentTileEffects			NewTileEffect;
 	local X2_Actor_ConcealmentBreakingTileEffects	SecondTileEffect;
 	local TTile										CurrentTile,NextTile;
@@ -76,104 +98,117 @@ function InitTiles()
 	VisibilityMgr = `TACTICALRULES.VisibilityMgr;
 	PC=XComTacticalController(class'Engine'.static.GetCurrentWorldInfo().GetALocalPlayerController());
 	ControllingUnit=XComGameState_Unit(`XCOMHISTORY.GetGameStateForObjectID( PC.ControllingUnit.ObjectID )); //Current unit controlled by the player
-	InitObjcetTiles(); //Check Objects that can kill concealment like advent detection towers.
-	if(ControllingUnit.IsConcealed())
+	`log("Is Concealed:"@LastConcealment @(ControllingUnit.IsConcealed()||ControllingUnit.IsSquadConcealed()||ControllingUnit.IsIndividuallyConcealed()));
+	if(LastConcealment!=(ControllingUnit.IsConcealed()||ControllingUnit.IsSquadConcealed()||ControllingUnit.IsIndividuallyConcealed()))
 	{
-		
-		foreach `XCOMHISTORY.IterateByClassType(class'XComGameState_Unit',Unit)
+		LastConcealment=(ControllingUnit.IsConcealed()||ControllingUnit.IsSquadConcealed()||ControllingUnit.IsIndividuallyConcealed());
+		InitObjcetTiles(); //Check Objects that can kill concealment like advent detection towers.
+		if(ControllingUnit.IsConcealed())
 		{
-			if(Unit.GetTeam()!=ETeam_XCom )
+			LastConcealment=true;
+			foreach `XCOMHISTORY.IterateByClassType(class'XComGameState_Unit',Unit)
 			{
-				distanceToUnit=VSizeSq(XGUnit(Unit.GetVisualizer()).GetPawn().Location-XGUnit(ControllingUnit.GetVisualizer()).GetPawn().Location);
-				VisibilityMgr.GetVisibilityInfo(ControllingUnit.ObjectID, Unit.ObjectID, VisibilityInfoFromThisUnit);
-				if(VisibilityInfoFromThisUnit.bClearLOS ||distanceToUnit<=Square((`METERSTOUNITS(ControllingUnit.GetCurrentStat(eStat_SightRadius)*1.5)))) //Checking whether to draw the tiles, saves from drawing for all enemies on the map which would be proccessor intensive
+				if(Unit.GetTeam()!=ETeam_XCom && !Unit.IsCivilian())
 				{
-					Unit.GetKeystoneVisibilityLocation(CurrentTile); //Get's current Unit tile (Unit is the enemy)
-					CurrentPosition = `XWORLD.GetPositionFromTileCoordinates(CurrentTile);
-					ConcealmentDetectionDistance = ControllingUnit.GetConcealmentDetectionDistance(Unit);
-					tempDist=ConcealmentDetectionDistance;
-					TileRange=int(tempDist*1/`METERSTOUNITS(1));//Returns the range of tiles from the enemy (they are on a grid) that are inside (or just a bit outside for extra safety) the range where the player will lose concealment
-					//`log("TileDistance:"$TileRange,true,'Team Dragonpunk');
-					For(i=(-1*TileRange);i<TileRange;i++) //runs through a square from -TileRange on the X and Y (remember - a grid of tiles) to the +TileRange on the X and Y
+					distanceToUnit=VSizeSq(XGUnit(Unit.GetVisualizer()).GetPawn().Location-XGUnit(ControllingUnit.GetVisualizer()).GetPawn().Location);
+					VisibilityMgr.GetVisibilityInfo(ControllingUnit.ObjectID, Unit.ObjectID, VisibilityInfoFromThisUnit);
+					if(VisibilityInfoFromThisUnit.bClearLOS || distanceToUnit<=Square((`METERSTOUNITS(ControllingUnit.GetCurrentStat(eStat_SightRadius)*1.5)))) //Checking whether to draw the tiles, saves from drawing for all enemies on the map which would be proccessor intensive
 					{
-						NextTile.X=CurrentTile.X+i;
-						for(j=(-1*TileRange);j<TileRange;j++)
+						Unit.GetKeystoneVisibilityLocation(CurrentTile); //Get's current Unit tile (Unit is the enemy)
+						CurrentPosition = `XWORLD.GetPositionFromTileCoordinates(CurrentTile);
+						ConcealmentDetectionDistance = ControllingUnit.GetConcealmentDetectionDistance(Unit);
+						tempDist=ConcealmentDetectionDistance;
+						TileRange=int(tempDist*1/`METERSTOUNITS(1));//Returns the range of tiles from the enemy (they are on a grid) that are inside (or just a bit outside for extra safety) the range where the player will lose concealment
+						//`log("TileDistance:"$TileRange,true,'Team Dragonpunk');
+						For(i=(-1*TileRange);i<TileRange;i++) //runs through a square from -TileRange on the X and Y (remember - a grid of tiles) to the +TileRange on the X and Y
 						{
+							NextTile.X=CurrentTile.X+i;
+							for(j=(-1*TileRange);j<TileRange;j++)
+							{
 
-							aFacing=Normal(Vector(XGUnit(Unit.GetVisualizer()).GetPawn().Rotation));
-							// Get the vector from A to B
-							NextTile.Y=CurrentTile.Y+j;
-							NextTile.Z=CurrentTile.Z;
-							aToB=`XWORLD.GetPositionFromTileCoordinates(NextTile) - `XWORLD.GetPositionFromTileCoordinates(CurrentTile) ; //Get's the vector from the tile currently checking to the tile where the enemy is at
-							Orientation = aFacing dot Normal(aToB); //Get's the angle between the tile and the enemy facing
-							UnitFoV=aCos(orientation); //get's the actual angle
+								aFacing=Normal(Vector(XGUnit(Unit.GetVisualizer()).GetPawn().Rotation));
+								// Get the vector from A to B
+								NextTile.Y=CurrentTile.Y+j;
+								NextTile.Z=CurrentTile.Z;
+								aToB=`XWORLD.GetPositionFromTileCoordinates(NextTile) - `XWORLD.GetPositionFromTileCoordinates(CurrentTile) ; //Get's the vector from the tile currently checking to the tile where the enemy is at
+								Orientation = aFacing dot Normal(aToB); //Get's the angle between the tile and the enemy facing
+								UnitFoV=aCos(orientation); //get's the actual angle
 					
-							if(UnitFoV>1.2215 || UnitFoV<-1.2215)// 70 deg in radians, could change easily and make it an INI parameter.
-							{
-								mySign=0.0f;
-							}
-							else
-							{
-								mySign=1.0f;
-							}
-							if(VSizeSq(aToB) <=mySign*Square(ConcealmentDetectionDistance) ) //Checks if the size of the distance vector from the newTile to the enemy tile is lower than the detection distance AND if the angle is below the specified one in mySign(70 degrees currently)
-							{
-
-								if(FindTile(NextTile,AllColoredTiles)) //if we already did that tile just skip it - saves a lot of calculations on post, maybe move it outside actually for possibly more performance because of early filtering
+								if(UnitFoV>1.2215 || UnitFoV<-1.2215)// 70 deg in radians, could change easily and make it an INI parameter.
 								{
-									`log("Found Me already");
+									mySign=0.0f;
 								}
 								else
 								{
-									`log("Tile (i,j) Angle Deg:" @UnitFoV*57.2957795131 @"Rad:"@UnitFoV @"ConcealmentDist:"@mySign*Square(ConcealmentDetectionDistance*((mySign*(1-(0.67*(UnitFoV^2)) ))^0.5f) ) @"DefTargetDist:"@VSizeSq(aToB) @"MySign:"@MySign,true,'Team Dragonpunk');
+									mySign=1.0f;
+								}
+								if(VSizeSq(aToB) <=mySign*Square(ConcealmentDetectionDistance) ) //Checks if the size of the distance vector from the newTile to the enemy tile is lower than the detection distance AND if the angle is below the specified one in mySign(70 degrees currently)
+								{
 
-									`log("i,j:"@"("$i$","$j$")",true,'Team Dragonpunk');
-									`log(" ");
-									TileNumber=CTE_Tile_Matrix.Find('UnitReference',Unit.ObjectID);
-									NewTileEffect=none;
-									SecondTileEffect=none;
-									if(TileNumber!=-1)
+									if(FindTile(NextTile,AllColoredTiles)) //if we already did that tile just skip it - saves a lot of calculations on post, maybe move it outside actually for possibly more performance because of early filtering
 									{
-										NewTileEffect=`BATTLE.Spawn(class'X2_Actor_ConcealmentTileEffects');		//Initilize the effect actor
-										SecondTileEffect=`BATTLE.Spawn(class'X2_Actor_ConcealmentBreakingTileEffects');//Initilize the effect actor
-										TileLocation=`XWORLD.GetPositionFromTileCoordinates(NextTile);//Get the location from the tile
-										TileLocation.Z = `XWORLD.GetFloorZForPosition(TileLocation) + 4;//Get the height From the tile (might need to improve to not have floating tiles)
-										NewTileEffect.SetLocation(TileLocation);			
-										NewTileEffect.SetHidden(false);
-										SecondTileEffect.SetLocation(TileLocation);			
-										SecondTileEffect.SetHidden(false);
-										CTE_Tile_Matrix[TileNumber].FoVTiles.additem(NextTile);	//Adding the tile to the CTE struct array - saving the tiles and deleting ones for individual units
-										CTE_Tile_Matrix[TileNumber].BreakingTileEffects.additem(SecondTileEffect);//Adding the tile effects to the CTE struct array - saving the tiles and deleting ones for individual units
-										CTE_Tile_Matrix[TileNumber].TileEffects.additem(NewTileEffect);//Adding the tile effects to the CTE struct array - saving the tiles and deleting ones for individual units
-										AllColoredTiles.AddItem(NextTile); //Adding the tile to the array of all tiles so we could filter it out later if needed
+										//`log("Found Me already");
+										continue;
 									}
 									else
 									{
-										TMM.UnitReference=Unit.ObjectID;	//TMM is a new Tile match matrix object to add to the array later 	
-										NewTileEffect=`BATTLE.Spawn(class'X2_Actor_ConcealmentTileEffects');
-										SecondTileEffect=`BATTLE.Spawn(class'X2_Actor_ConcealmentBreakingTileEffects');
-										TileLocation=`XWORLD.GetPositionFromTileCoordinates(NextTile);
-										TileLocation.Z = `XWORLD.GetFloorZForPosition(TileLocation) + 4;
-										NewTileEffect.SetLocation(TileLocation);
-										NewTileEffect.SetHidden(false);
-										SecondTileEffect.SetLocation(TileLocation);
-										SecondTileEffect.SetHidden(false);	//basically the same as the one above
-										TMM.FoVTiles.additem(NextTile);
-										TMM.BreakingTileEffects.additem(SecondTileEffect);
-										TMM.TileEffects.AddItem(NewTileEffect);
-										CTE_Tile_Matrix.AddItem(TMM);	//Adding the TMM to the array of tile matrix
-										AllColoredTiles.AddItem(NextTile); //Adding the tile to the array of all tiles 
+										//`log("Tile (i,j) Angle Deg:" @UnitFoV*57.2957795131 @"Rad:"@UnitFoV @"ConcealmentDist:"@mySign*Square(ConcealmentDetectionDistance*((mySign*(1-(0.67*(UnitFoV^2)) ))^0.5f) ) @"DefTargetDist:"@VSizeSq(aToB) @"MySign:"@MySign,true,'Team Dragonpunk');
+
+										//`log("i,j:"@"("$i$","$j$")",true,'Team Dragonpunk');
+										//`log(" ");
+										TileNumber=CTE_Tile_Matrix.Find('UnitReference',Unit.ObjectID);
+										NewTileEffect=none;
+										SecondTileEffect=none;
+										if(TileNumber!=-1)
+										{
+											NewTileEffect=`BATTLE.Spawn(class'X2_Actor_ConcealmentTileEffects');		//Initilize the effect actor
+											SecondTileEffect=`BATTLE.Spawn(class'X2_Actor_ConcealmentBreakingTileEffects');//Initilize the effect actor
+											TileLocation=`XWORLD.GetPositionFromTileCoordinates(NextTile);//Get the location from the tile
+											TileLocation.Z = `XWORLD.GetFloorZForPosition(TileLocation) + 4;//Get the height From the tile (might need to improve to not have floating tiles)
+											NewTileEffect.SetLocation(TileLocation);			
+											NewTileEffect.SetHidden(false);
+											SecondTileEffect.SetLocation(TileLocation);			
+											SecondTileEffect.SetHidden(false);
+											CTE_Tile_Matrix[TileNumber].FoVTiles.additem(NextTile);	//Adding the tile to the CTE struct array - saving the tiles and deleting ones for individual units
+											CTE_Tile_Matrix[TileNumber].BreakingTileEffects.additem(SecondTileEffect);//Adding the tile effects to the CTE struct array - saving the tiles and deleting ones for individual units
+											CTE_Tile_Matrix[TileNumber].TileEffects.additem(NewTileEffect);//Adding the tile effects to the CTE struct array - saving the tiles and deleting ones for individual units
+											AllColoredTiles.AddItem(NextTile); //Adding the tile to the array of all tiles so we could filter it out later if needed
+										}
+										else
+										{
+											TMM.UnitReference=Unit.ObjectID;	//TMM is a new Tile match matrix object to add to the array later 	
+											NewTileEffect=`BATTLE.Spawn(class'X2_Actor_ConcealmentTileEffects');
+											SecondTileEffect=`BATTLE.Spawn(class'X2_Actor_ConcealmentBreakingTileEffects');
+											TileLocation=`XWORLD.GetPositionFromTileCoordinates(NextTile);
+											TileLocation.Z = `XWORLD.GetFloorZForPosition(TileLocation) + 4;
+											NewTileEffect.SetLocation(TileLocation);
+											NewTileEffect.SetHidden(false);
+											SecondTileEffect.SetLocation(TileLocation);
+											SecondTileEffect.SetHidden(false);	//basically the same as the one above
+											TMM.FoVTiles.additem(NextTile);
+											TMM.BreakingTileEffects.additem(SecondTileEffect);
+											TMM.TileEffects.AddItem(NewTileEffect);
+											CTE_Tile_Matrix.AddItem(TMM);	//Adding the TMM to the array of tile matrix
+											AllColoredTiles.AddItem(NextTile); //Adding the tile to the array of all tiles 
+										}
 									}
 								}
 							}
-						}
-					}			
+						}			
+					}
 				}
 			}
 		}
+		else
+		{
+			LastConcealment=false;	
+			DestroyAllTiles();
+		}
 	}
 	else
-		DestroyAllTiles();
+		`log("failed some test");
+	
+	`log("Ended Tile Generation");
 }
 
 function InitObjcetTiles()
@@ -220,8 +255,8 @@ function InitObjcetTiles()
 						else
 						{
 
-							`log("i,j:"@"("$i$","$j$")",true,'Team Dragonpunk');
-							`log(" ");
+							//`log("i,j:"@"("$i$","$j$")",true,'Team Dragonpunk');
+							//`log(" ");
 							TileNumber=CTE_Tile_Matrix.Find('UnitReference',InteractiveObjectState.ObjectID);
 							NewTileEffect=none;
 							SecondTileEffect=none;
@@ -296,6 +331,7 @@ function DestroyTiles(int UnitMObjectIDef)
 		TMM=CTE_Tile_Matrix[TileNumber];	
 		CTE_Tile_Matrix.RemoveItem(TMM);	//Remove the entry from the array entirely
 	}
+	//LastConcealment=true;
 }
 
 function DestroyAllTiles()
@@ -310,6 +346,8 @@ function DestroyAllTiles()
 		DestroyTiles(MObjectID);
 	}	
 	CTE_Tile_Matrix.Length=0;
+	//LastConcealment=true;
+
 }
 
 function bool FindTile(TTile tile, out array<TTile> findArray)

@@ -39,7 +39,7 @@
     <Content Include="Src\XCOMGhosts\Classes\UI_Listener_TacHUDStart.uc">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="Src\XCOMGhosts\Classes\UI_Listener_TacHUD_FoVConeDrawer.uc">
+    <Content Include="Src\XCOMGhosts\Classes\UI_Listener_UIMission_MoreCivis.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\XCOMGhosts\Classes\UI_Listener_UIShell.uc">
@@ -55,6 +55,9 @@
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\XCOMGhosts\Classes\X2DownloadableContentInfo_XCOMGhosts.uc">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Src\XCOMGhosts\Classes\X2Effect_IndividualEnterConcealment.uc">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Src\XCOMGhosts\Classes\X2Effect_Silencer.uc">

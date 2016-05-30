@@ -27,6 +27,7 @@ static function array<X2DataTemplate> CreateTemplates()
 
 	CharTemp=CTM.FindCharacterTemplate('Soldier');
 	CharTemp.Abilities.AddItem('ReConcealeSquad');
+	CharTemp.Abilities.AddItem('ReConcealeIndividual');
 	`log("-------------------------------------Gave all soldiers ReConcealeSquad------------------------");
 
 	Templates.Length=0;
