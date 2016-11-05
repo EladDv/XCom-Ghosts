@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{5DAE07AF-E217-45C1-8DE7-FF99D6011E8A}") = "XCOM_Ghosts", "XCOM_Ghosts\XCOM_Ghosts.x2proj", "{70942A0E-3831-4E7F-8565-C2A713A6E25E}"
 EndProject
-Project("{5DAE07AF-E217-45C1-8DE7-FF99D6011E8A}") = "Project Reference", "..\Second Wave Reborn\Project Reference\Project Reference.x2proj", "{62F3F9DF-3F57-400B-B99E-84E426CF23F9}"
+Project("{5DAE07AF-E217-45C1-8DE7-FF99D6011E8A}") = "DefaultStartupMod", "..\..\Firaxis ModBuddy\XCOM\DefaultStartupMod\DefaultStartupMod\DefaultStartupMod.x2proj", "{214E578A-2B4E-42F1-86AD-3C9BB1FBC1CF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,8 +14,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{70942A0E-3831-4E7F-8565-C2A713A6E25E}.Default|XCOM 2.ActiveCfg = Default|XCOM 2
 		{70942A0E-3831-4E7F-8565-C2A713A6E25E}.Default|XCOM 2.Build.0 = Default|XCOM 2
-		{62F3F9DF-3F57-400B-B99E-84E426CF23F9}.Default|XCOM 2.ActiveCfg = Default|XCOM 2
-		{62F3F9DF-3F57-400B-B99E-84E426CF23F9}.Default|XCOM 2.Build.0 = Default|XCOM 2
+		{214E578A-2B4E-42F1-86AD-3C9BB1FBC1CF}.Default|XCOM 2.ActiveCfg = Default|XCOM 2
+		{214E578A-2B4E-42F1-86AD-3C9BB1FBC1CF}.Default|XCOM 2.Build.0 = Default|XCOM 2
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -57,7 +57,7 @@ static function X2AbilityTemplate ReConcealeSquad()
 	
 	Template.AbilityShooterConditions.AddItem(default.LivingShooterProperty);
 
-
+	Template.AdditionalAbilities.AddItem('ReConcealeIndividual');
 	
 	EventListener = new class'X2AbilityTrigger_EventListener';
 	EventListener.ListenerData.Deferral = ELD_OnStateSubmitted;

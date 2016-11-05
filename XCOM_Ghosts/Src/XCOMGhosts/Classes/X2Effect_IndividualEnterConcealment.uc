@@ -18,9 +18,9 @@ simulated function OnEffectRemoved(const out EffectAppliedData ApplyEffectParame
 	if(HasE_Enemies==false) {`log("Redoing Individual Concealment"); bToPass=true;}
 	else {`log("Failed doing Individual Concealment"); bToPass=false;}
 
-	ApplySquadConceal(OwningUnit, NewGameState, bToPass);
+	ApplyIndividualConceal(OwningUnit, NewGameState, bToPass);
 }
-function ApplySquadConceal(XComGameState_Unit Unit,XComGameState NewGameState,optional bool ReConceale=false)
+function ApplyIndividualConceal(XComGameState_Unit Unit,XComGameState NewGameState,optional bool ReConceale=false)
 {
 	local array<XComGameState_Unit>	AttachedUnits;
 	local XComGameState_Unit		GremlinUnit;
@@ -49,12 +49,13 @@ function bool HasEngagedEnemies(XComGameState_Unit ThisUnitState)
 	{
 		if(Unit.GetTeam() == eTeam_Alien)
 		{
-		//	`log("eStat_AlertLevel"@Unit.GetCurrentStat(eStat_AlertLevel)); 
-		//	`log("HP"@Unit.GetCurrentStat(eStat_HP));
-		//	`log("Red"@`ALERT_LEVEL_RED);
-		//	`log("");
-			
 			VisibilityMgr.GetVisibilityInfo(ThisUnitState.ObjectID, Unit.ObjectID, VisibilityInfoFromOtherUnit);
+			`log("eStat_AlertLevel"@Unit.GetCurrentStat(eStat_AlertLevel)); 
+			`log("bVisibleGameplay"@VisibilityInfoFromOtherUnit.bVisibleGameplay); 
+			`log("HP"@Unit.GetCurrentStat(eStat_HP));
+			`log("Red"@`ALERT_LEVEL_RED);
+			`log("");
+			
 			if((Unit.GetCurrentStat(eStat_AlertLevel) >= `ALERT_LEVEL_RED && Unit.GetCurrentStat(eStat_HP)>0 ) && VisibilityInfoFromOtherUnit.bVisibleGameplay)	
 				Return True;
 		}

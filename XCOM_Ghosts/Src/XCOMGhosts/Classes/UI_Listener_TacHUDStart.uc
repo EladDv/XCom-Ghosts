@@ -6,6 +6,7 @@ event OnInit(UIScreen Screen)
 {
 	local Object ThisObj;
 	local X2_Actor_CTE_Group ACTEG;
+	local XComGameState NewGameState;
 
 	ThisObj=self;
 /*  `XEVENTMGR.RegisterForEvent(ThisObj, 'ObjectMoved', FixVisibility, ELD_OnStateSubmitted,70);	
@@ -14,9 +15,68 @@ event OnInit(UIScreen Screen)
 */
 	ACTEG=`BATTLE.Spawn(class'X2_Actor_CTE_Group');
 	`log("-----------Registered for Object Moved-----------");	
-	
-	
+	NewGameState = class'XComGameStateContext_ChangeContainer'.static.CreateChangeState("Add Reconcealment");
+	AddReConcealmentAbilityToAllUnits(NewGameState);
+	if(NewGameState.GetNumGameStateObjects()>0)
+		`XCOMHISTORY.AddGameStateToHistory(NewGameState);
+	else
+		`XCOMHISTORY.CleanupPendingGameState(NewGameState);
 }
+
+function AddReConcealmentAbilityToAllUnits(XComGameState GameState)
+{
+	local X2AbilityTemplate ReConcealeSquadAbilityTemplate, AbilityTemplate;
+	local array<X2AbilityTemplate> AllAbilityTemplates;
+	local XComGameStateHistory History;
+	local XComGameState_Unit AbilitySourceUnitState;
+	local StateObjectReference AbilityRef;
+	local XComGameState_Ability AbilityState;
+	local Name AdditionalAbilityName;
+	local X2EventManager EventMgr;
+
+	History = `XCOMHISTORY;
+	EventMgr = `XEVENTMGR;
+	ReConcealeSquadAbilityTemplate = class'X2AbilityTemplateManager'.static.GetAbilityTemplateManager().FindAbilityTemplate('ReConcealeSquad');
+
+	if( ReConcealeSquadAbilityTemplate != none )
+	{
+		AllAbilityTemplates.AddItem(ReConcealeSquadAbilityTemplate);
+		foreach ReConcealeSquadAbilityTemplate.AdditionalAbilities(AdditionalAbilityName)
+		{
+			AbilityTemplate = class'X2AbilityTemplateManager'.static.GetAbilityTemplateManager().FindAbilityTemplate(AdditionalAbilityName);
+			if( AbilityTemplate != none )
+			{
+				AllAbilityTemplates.AddItem(AbilityTemplate);
+			}
+		}
+	}
+
+	foreach History.IterateByClassType(class'XComGameState_Unit', AbilitySourceUnitState)
+	{
+		if(AbilitySourceUnitState.GetTeam() != eTeam_XCom)
+			continue;
+
+		AbilitySourceUnitState = XComGameState_Unit(GameState.CreateStateObject(class'XComGameState_Unit', AbilitySourceUnitState.ObjectID));
+		GameState.AddStateObject(AbilitySourceUnitState);
+
+		foreach AllAbilityTemplates(AbilityTemplate)
+		{
+			AbilityRef = AbilitySourceUnitState.FindAbility(AbilityTemplate.DataName);
+			if( AbilityRef.ObjectID == 0 )
+			{
+				AbilityRef = `TACTICALRULES.InitAbilityForUnit(ReConcealeSquadAbilityTemplate, AbilitySourceUnitState, GameState);
+			}
+
+			AbilityState = XComGameState_Ability(GameState.CreateStateObject(class'XComGameState_Ability', AbilityRef.ObjectID));
+			GameState.AddStateObject(AbilityState);
+		}
+		`log("---------------------Added ReConcealment To Unit!-----------------------");
+
+		// trigger event listeners now to update red fog activation for already applied effects
+	}
+
+}
+
 function EventListenerReturn TestReturnStuff(Object EventData, Object EventSource, XComGameState GameState, Name EventID)
 {
 	`log("---------------------IT DIDNT WORK! TEST FAILED!-----------------------");
